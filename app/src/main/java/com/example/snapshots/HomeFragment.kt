@@ -18,8 +18,6 @@ import com.firebase.ui.database.FirebaseRecyclerOptions
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 
-
-
 class HomeFragment : Fragment() {
 
     private lateinit var mBinding: FragmentHomeBinding
@@ -49,8 +47,8 @@ class HomeFragment : Fragment() {
             override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SnapshotHolder {
                 mContext = parent.context
 
-                val view =
-                    LayoutInflater.from(mContext).inflate(R.layout.item_snapshot, parent, false)
+                val view = LayoutInflater.from(mContext)
+                    .inflate(R.layout.item_snapshot, parent, false)
                 return SnapshotHolder(view)
             }
 
@@ -64,15 +62,15 @@ class HomeFragment : Fragment() {
                         .load(snapshot.photoUrl)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .centerCrop()
-                        .into(binding.ivPhoto)
+                        .into(binding.imgPhoto)
                 }
             }
-
+            //este es para poner stop al progress bar
             override fun onDataChanged() {
                 super.onDataChanged()
                 mBinding.progressBar.visibility = View.GONE
             }
-
+        //este es para capturar el error
             override fun onError(error: DatabaseError) {
                 super.onError(error)
                 Toast.makeText(mContext, error.message, Toast.LENGTH_SHORT).show()
