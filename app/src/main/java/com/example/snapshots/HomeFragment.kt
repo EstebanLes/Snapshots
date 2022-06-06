@@ -36,11 +36,20 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val query = FirebaseDatabase.getInstance().reference.child("snapshots")
+        val query = FirebaseDatabase.getInstance().reference
+            .child("snapshots")
 
-        val options = FirebaseRecyclerOptions.Builder<Snapshot>()
-            .setQuery(query, Snapshot::class.java)
-            .build()
+        // En esta var se guarda el usuario actual para poder filtrar los snapshots que se muestran
+        // en la pantalla principal despues uso setQuery() le paso la query y el usuario actual
+        // para filtrar una vez que obtengo el usuario actual, lo guardo en una var y la igualo
+        // a la query para que me de los snapshots
+        val options = FirebaseRecyclerOptions
+            .Builder<Snapshot>()
+            .setQuery(query, {
+            val snapshot = it.getValue(Snapshot::class.java)
+            snapshot!!.id = it.key!!
+            snapshot
+        }).build()
 
         mFirebaseAdapter = object : FirebaseRecyclerAdapter<Snapshot, SnapshotHolder>(options) {
             private lateinit var mContext: Context
@@ -66,6 +75,7 @@ class HomeFragment : Fragment() {
                         .into(binding.imgPhoto)
                 }
             }
+
             //este es para poner stop al progress bar
             @SuppressLint("NotifyDataSetChanged")//Error interno firebase ui 8.0.0
             override fun onDataChanged() {
@@ -73,7 +83,8 @@ class HomeFragment : Fragment() {
                 mBinding.progressBar.visibility = View.GONE
                 notifyDataSetChanged()
             }
-        //este es para capturar el error
+
+            //este es para capturar el error
             override fun onError(error: DatabaseError) {
                 super.onError(error)
                 Toast.makeText(mContext, error.message, Toast.LENGTH_SHORT).show()
@@ -98,12 +109,22 @@ class HomeFragment : Fragment() {
         mFirebaseAdapter.stopListening()
     }
 
+    private fun deleteSnapshot(snapshot: Snapshot) {
+        val databaseReference = FirebaseDatabase.getInstance().reference.child("snapshots")
+        databaseReference.child(snapshot.id).removeValue()
+    }
+
+    private fun setLike(snapshot: Snapshot, checked: Boolean) {
+
+    }
+
     inner class SnapshotHolder(view: View) : RecyclerView.ViewHolder(view) {
         val binding = ItemSnapshotBinding.bind(view)
 
-        fun setListener(
-            snapshot: Snapshot) {
-
+        fun setListener(snapshot: Snapshot) {
+            binding.btnDelete.setOnClickListener {
+                deleteSnapshot(snapshot)
+            }
         }
     }
 }

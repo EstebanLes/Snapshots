@@ -31,7 +31,8 @@ class MainActivity : AppCompatActivity() {
         setupAuth()
         setupButtomNav()
     }
-
+//esta fun privada lo que hace es que cuando se crea la actividad se crea un listener
+// para ver si hay un usuario logueado o no y si no hay un usuario logueado se le muestra
     private fun setupAuth() {
         mFirebaseAuth = FirebaseAuth.getInstance()
         mAuthListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
@@ -39,6 +40,7 @@ class MainActivity : AppCompatActivity() {
             if (user == null) {
                 startActivityForResult(
                     AuthUI.getInstance().createSignInIntentBuilder()
+                       //.setIsSmartLockEnabled(false)
                         .setAvailableProviders(
                             arrayListOf(
                                 AuthUI.IdpConfig.EmailBuilder().build(),
