@@ -16,6 +16,8 @@ import com.example.snapshots.databinding.FragmentHomeBinding
 import com.example.snapshots.databinding.ItemSnapshotBinding
 import com.firebase.ui.database.FirebaseRecyclerAdapter
 import com.firebase.ui.database.FirebaseRecyclerOptions
+import com.firebase.ui.database.SnapshotParser
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 
@@ -36,20 +38,15 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val query = FirebaseDatabase.getInstance().reference
-            .child("snapshots")
+        val query = FirebaseDatabase.getInstance().reference.child("snapshots")
 
-        // En esta var se guarda el usuario actual para poder filtrar los snapshots que se muestran
-        // en la pantalla principal despues uso setQuery() le paso la query y el usuario actual
-        // para filtrar una vez que obtengo el usuario actual, lo guardo en una var y la igualo
-        // a la query para que me de los snapshots
-        val options = FirebaseRecyclerOptions
-            .Builder<Snapshot>()
-            .setQuery(query, {
-            val snapshot = it.getValue(Snapshot::class.java)
-            snapshot!!.id = it.key!!
-            snapshot
-        }).build()
+        val options =
+            FirebaseRecyclerOptions.Builder<Snapshot>().setQuery(query) {
+                val snapshot = it.getValue(Snapshot::class.java)
+                snapshot!!.id = it.key!!
+                snapshot
+            }.build()
+
 
         mFirebaseAdapter = object : FirebaseRecyclerAdapter<Snapshot, SnapshotHolder>(options) {
             private lateinit var mContext: Context
@@ -110,12 +107,23 @@ class HomeFragment : Fragment() {
     }
 
     private fun deleteSnapshot(snapshot: Snapshot) {
-        val databaseReference = FirebaseDatabase.getInstance().reference.child("snapshots")
+        val databaseReference = FirebaseDatabase.getInstance().reference
+            .child("snapshots")
         databaseReference.child(snapshot.id).removeValue()
     }
 
     private fun setLike(snapshot: Snapshot, checked: Boolean) {
-
+        val databaseReference = FirebaseDatabase.getInstance().reference
+            .child("snapshots")
+        if(checked) {
+            databaseReference.child(snapshot.id).child("likeList")
+                .child(FirebaseAuth.getInstance().currentUser!!.uid)
+                .setValue(checked)
+        } else {
+            databaseReference.child(snapshot.id).child("likeList")
+                .child(FirebaseAuth.getInstance().currentUser!!.uid)
+                .setValue(null)
+        }
     }
 
     inner class SnapshotHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -124,6 +132,9 @@ class HomeFragment : Fragment() {
         fun setListener(snapshot: Snapshot) {
             binding.btnDelete.setOnClickListener {
                 deleteSnapshot(snapshot)
+                binding.cbLike.setOnCheckedChangeListener{ buttonView, checked ->
+                    setLike((snapshot), checked)
+                }
             }
         }
     }

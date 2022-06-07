@@ -19,8 +19,8 @@ import com.google.firebase.storage.StorageReference
 
 class AddFragment : Fragment() {
 
-    private val RC_GALLERY = 18
-    private val PATH_SNAPSHOT = "snapshots"
+    private val RC_GALLERY = 18// variable creada para el codigo de la galeria
+    private val PATH_SNAPSHOT = "snapshots" //variable creada para almacenar la ruta de la imagen
 
     private lateinit var mBinding: FragmentAddBinding
     private lateinit var mStorageReference: StorageReference
@@ -53,6 +53,7 @@ class AddFragment : Fragment() {
         startActivityForResult(intent, RC_GALLERY)
     }
 
+    //este metodo se ejecuta cuando se selecciona una imagen de la galeria
     private fun postSnapshot() {
         mBinding.progressBar.visibility = View.VISIBLE
         val key = mDataBaseReference.push().key!!
@@ -62,7 +63,8 @@ class AddFragment : Fragment() {
         if (mPhotoSelectedUri != null) {
             storageReference.putFile(mPhotoSelectedUri!!)
                 .addOnProgressListener { it ->
-                    val progress = 100 * it.bytesTransferred / it.totalByteCount.toDouble()
+                    val progress = 100 * it.bytesTransferred / it.totalByteCount.toDouble()//barra de progreso al subir la imagen
+
                     mBinding.progressBar.progress = progress.toInt()
                     mBinding.tvMessage.text = "$progress %"
                 }
@@ -70,8 +72,8 @@ class AddFragment : Fragment() {
                     mBinding.progressBar.visibility = View.INVISIBLE
                 }
                 .addOnSuccessListener { it ->
-                    Snackbar.make(mBinding.root, "Instantanea Publicada.", Snackbar.LENGTH_SHORT)
-                        .show()
+                    Snackbar.make(mBinding.root, "Instantanea Publicada.",
+                        Snackbar.LENGTH_SHORT).show()
                     it.storage.downloadUrl.addOnSuccessListener {
                         saveSnapshot(key,it.toString(),mBinding.etTitle.text.toString().trim())
                         mBinding.tilTitle.visibility = View.GONE
